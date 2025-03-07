@@ -9,6 +9,7 @@
 #include "keycodes.h"
 #include "process_combo.h"
 #include "process_tap_dance.h"
+#include "quantum.h"
 #include QMK_KEYBOARD_H
 #include <cyboard.h>
 
@@ -21,11 +22,11 @@ enum layer_names {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_BASE] = LAYOUT_let(
-        KC_TAB,        KC_B,          KC_Y,            KC_O,     KC_U,          KC_QUOT,                                KC_COMM,       KC_L,          KC_D,    KC_W,          KC_V,          KC_BSLS,
+        KC_TAB,        KC_B,          KC_Y,            KC_O,     KC_U,          KC_QUOT,                                KC_COMM,       KC_L,          KC_D,    KC_W,          KC_V,          KC_SLSH,
         KC_ESC,        LCTL_T(KC_C),  LALT_T(KC_I),    KC_E,     LGUI_T(KC_A),  KC_Z,                                   KC_Q,          RGUI_T(KC_H),  KC_T,    RALT_T(KC_S),  RCTL_T(KC_N),  KC_SCLN,
-        TG(_SYMBOL),   KC_G,          KC_X,            KC_J,     KC_K,          KC_MINUS,                               KC_DOT,        KC_R,          KC_M,    KC_F,          KC_P,          KC_SLSH,
-                                      KC_LEFT,         KC_RIGHT, QK_LEAD, OSM(MOD_HYPR), KC_MUTE,        KC_VOLU,  OSM(MOD_MEH),  KC_ENT,        KC_UP,   KC_DOWN,
-                                                                         OSM(MOD_LSFT),       OSL(_SYMBOL),      KC_MCTL,        KC_VOLD,  KC_BSPC,       KC_SPC
+        TG(_SYMBOL),   KC_G,          KC_X,            KC_J,     KC_K,          KC_MINUS,                               KC_DOT,        KC_R,          KC_M,    KC_F,          KC_P,          KC_BSLS,
+                                      KC_LEFT,         KC_RIGHT, QK_LEAD,       OSM(MOD_HYPR), KC_MUTE,       KC_VOLU,  OSM(MOD_MEH),  QK_REP,        KC_UP,   KC_DOWN,
+                                                                 KC_BSPC,       OSL(_SYMBOL),  KC_MCTL,       KC_VOLD,  OSM(MOD_LSFT), KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
@@ -100,3 +101,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                             _______, _______, _______,         _______, _______, _______
     )
 };
+
+
+void leader_end_user(void) {
+    if (leader_sequence_one_key(KC_SPC)) {
+        tap_code16(KC_ENT);
+    }
+}
