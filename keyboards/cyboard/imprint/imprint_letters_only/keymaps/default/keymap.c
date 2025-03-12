@@ -112,7 +112,6 @@ void dance_one_shot_num_word_reset(tap_dance_state_t *state, void *user_data) {
 const key_override_t left_curly_brace_override = ko_make_basic(MOD_MASK_SHIFT, KC_LCBR, KC_RCBR);
 const key_override_t left_bracket_override = ko_make_basic(MOD_MASK_SHIFT, KC_LBRC, KC_RBRC);
 const key_override_t left_paren_override = ko_make_basic(MOD_MASK_SHIFT, KC_LPRN, KC_RPRN);
-const key_override_t mute_play_pause_override = ko_make_basic(MOD_MASK_SHIFT, KC_MUTE, KC_MPLY);
 const key_override_t volup_next_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLU, KC_MNXT);
 const key_override_t voldown_prev_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLD, KC_MPRV);
 
@@ -120,7 +119,6 @@ const key_override_t *key_overrides[] = {
     &left_curly_brace_override,
     &left_bracket_override,
     &left_paren_override,
-    &mute_play_pause_override,
     &volup_next_track_override,
     &voldown_prev_track_override
 };
@@ -136,14 +134,31 @@ tap_dance_action_t tap_dance_actions[] = {
 #define UK_RST RIGHT_SNIPING_MODE_TOGGLE
 #define UK_RDM RIGHT_DRAGSCROLL_MODE
 #define UK_SRC LSFT(MS_BTN2)
+#define UK_TDNW TD(TD_OSL_NUM_WORD)
+#define OSM_HYPR OSM(MOD_HYPR)
+#define OSM_MEH OSM(MOD_MEH)
+#define OSM_LSFT OSM(MOD_LSFT)
+#define TT_NAV TT(_NAV)
+#define HM_LCTC LCTL_T(KC_C)
+#define HM_LALI LALT_T(KC_I)
+#define HM_HYPE HYPR_T(KC_E)
+#define HM_LGUA LGUI_T(KC_A)
+#define HM_RGUH RGUI_T(KC_H)
+#define HM_HYPT HYPR_T(KC_T)
+#define HM_RALS RALT_T(KC_S)
+#define HM_RCTN RCTL_T(KC_N)
+#define UK_COPY LGUI(KC_C)
+#define UK_PSTE RGUI(KC_V)
+#define UK_LOCK LGUI(LCTL(KC_Q))
+
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ENGRAM] = LAYOUT_let(
-        KC_TAB,        KC_B,          KC_Y,            KC_O,     KC_U,          KC_QUOT,                                       TT(_NAV),       KC_L,          KC_D,    KC_W,          KC_V,          KC_SLSH,
-        KC_ESC,        LCTL_T(KC_C),  LALT_T(KC_I),    KC_E,     LGUI_T(KC_A),  KC_Z,                                          KC_Q,           RGUI_T(KC_H),  KC_T,    RALT_T(KC_S),  RCTL_T(KC_N),  KC_SCLN,
-        TG(_SYMBOL),   KC_G,          KC_X,            KC_J,     KC_K,          TT(_NAV),                                      KC_DOT,         KC_R,          KC_M,    KC_F,          KC_P,          KC_BSLS,
-                                      KC_LEFT,         KC_RIGHT, QK_LEAD,       OSM(MOD_HYPR),        KC_MUTE,       KC_VOLU,  OSM(MOD_MEH),   KC_ENT,        KC_UP,   KC_DOWN,
-                                                                 KC_BSPC,       TD(TD_OSL_NUM_WORD),  KC_MCTL,       KC_VOLD,  OSM(MOD_LSFT),  KC_SPC
+        KC_TAB,       KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SLSH,
+        KC_ESC,       HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  UK_COPY,                        TT(_NAV),    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_SCLN,
+        TG(_SYMBOL),  KC_G,     KC_X,     KC_J,      KC_K,     UK_PSTE,                        UK_LOCK,   KC_R,     KC_M,     KC_F,     KC_P,     KC_BSLS,
+                                KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_MCTL,  KC_MUTE,    KC_VOLU,  OSM_MEH,   KC_ENT,   KC_UP,    KC_DOWN,
+                                                     KC_BSPC,  UK_TDNW,  KC_MPLY,    KC_VOLD,  OSM_LSFT,  KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
@@ -155,8 +170,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NAV] = LAYOUT_let(
-        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
-        _______, MS_BTN1, MS_BTN2,  UK_RST, _______, _______,                            UK_RDM, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______,                           _______,  UK_RDM, _______, _______, _______, _______,
+        _______, MS_BTN1, MS_BTN2,  UK_RST, _______, _______,                           _______, _______, _______, _______, _______, _______,
         _______, _______,  UK_SRC, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______,        MS_BTN1, MS_BTN2, UK_SRC, _______, _______,
                                             _______, _______, _______,         _______, _______, _______
