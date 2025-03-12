@@ -8,25 +8,25 @@
 #include "action_util.h"
 #include "caps_word.h"
 #include "color.h"
-#include "debug.h"
 #include "info_config.h"
 #include "keyboard.h"
 #include "keycodes.h"
 #include "keymap_us.h"
 #include "modifiers.h"
 #include "pointing_device.h"
-#include "pointing_device_auto_mouse.h"
 #include "process_caps_word.h"
+#include "process_key_override.h"
 #include "process_tap_dance.h"
 #include "quantum.h"
 #include "quantum_keycodes.h"
 #include "rgb_matrix.h"
+#include "send_string_keycodes.h"
 #include "timer.h"
 #include QMK_KEYBOARD_H
 #include <cyboard.h>
 
 enum layer_names {
-    _BASE,
+    _ENGRAM,
     _SYMBOL,
     _NAV
 };
@@ -109,6 +109,22 @@ void dance_one_shot_num_word_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
+const key_override_t left_curly_brace_override = ko_make_basic(MOD_MASK_SHIFT, KC_LCBR, KC_RCBR);
+const key_override_t left_bracket_override = ko_make_basic(MOD_MASK_SHIFT, KC_LBRC, KC_RBRC);
+const key_override_t left_paren_override = ko_make_basic(MOD_MASK_SHIFT, KC_LPRN, KC_RPRN);
+const key_override_t mute_play_pause_override = ko_make_basic(MOD_MASK_SHIFT, KC_MUTE, KC_MPLY);
+const key_override_t volup_next_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLU, KC_MNXT);
+const key_override_t voldown_prev_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLD, KC_MPRV);
+
+const key_override_t *key_overrides[] = {
+    &left_curly_brace_override,
+    &left_bracket_override,
+    &left_paren_override,
+    &mute_play_pause_override,
+    &volup_next_track_override,
+    &voldown_prev_track_override
+};
+
 enum tap_dances {
     TD_OSL_NUM_WORD
 };
@@ -122,19 +138,18 @@ tap_dance_action_t tap_dance_actions[] = {
 #define UK_SRC LSFT(MS_BTN2)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-
-    [_BASE] = LAYOUT_let(
-        KC_TAB,        KC_B,          KC_Y,            KC_O,     KC_U,          KC_QUOT,                                KC_COMM,       KC_L,          KC_D,    KC_W,          KC_V,          KC_SLSH,
-        KC_ESC,        LCTL_T(KC_C),  LALT_T(KC_I),    KC_E,     LGUI_T(KC_A),  KC_Z,                                   KC_Q,          RGUI_T(KC_H),  KC_T,    RALT_T(KC_S),  RCTL_T(KC_N),  KC_SCLN,
-        TG(_SYMBOL),   KC_G,          KC_X,            KC_J,     KC_K,          KC_MINUS,                               KC_DOT,        KC_R,          KC_M,    KC_F,          KC_P,          KC_BSLS,
-                                      KC_LEFT,         KC_RIGHT, QK_LEAD,       OSM(MOD_HYPR), KC_MUTE,       KC_VOLU,  OSM(MOD_MEH),  KC_ENT,        KC_UP,   KC_DOWN,
-                                                                 KC_BSPC,       TD(TD_OSL_NUM_WORD),  KC_MCTL,       KC_VOLD,  OSM(MOD_LSFT), KC_SPC
+    [_ENGRAM] = LAYOUT_let(
+        KC_TAB,        KC_B,          KC_Y,            KC_O,     KC_U,          KC_QUOT,                                       TT(_NAV),       KC_L,          KC_D,    KC_W,          KC_V,          KC_SLSH,
+        KC_ESC,        LCTL_T(KC_C),  LALT_T(KC_I),    KC_E,     LGUI_T(KC_A),  KC_Z,                                          KC_Q,           RGUI_T(KC_H),  KC_T,    RALT_T(KC_S),  RCTL_T(KC_N),  KC_SCLN,
+        TG(_SYMBOL),   KC_G,          KC_X,            KC_J,     KC_K,          TT(_NAV),                                      KC_DOT,         KC_R,          KC_M,    KC_F,          KC_P,          KC_BSLS,
+                                      KC_LEFT,         KC_RIGHT, QK_LEAD,       OSM(MOD_HYPR),        KC_MUTE,       KC_VOLU,  OSM(MOD_MEH),   KC_ENT,        KC_UP,   KC_DOWN,
+                                                                 KC_BSPC,       TD(TD_OSL_NUM_WORD),  KC_MCTL,       KC_VOLD,  OSM(MOD_LSFT),  KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
-        KC_TILD,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0, _______,
-        KC_GRV,  _______, KC_PLUS,  KC_EQL, KC_RBRC, KC_RPRN,                           KC_LPRN, KC_LBRC, _______, _______, _______, _______,
-        _______, _______, _______, _______, KC_RCBR, _______,                           _______, KC_LCBR, _______, _______, _______, _______,
+        _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0, _______,
+        _______,  KC_GRV, KC_PLUS,  KC_EQL, KC_COMM, KC_QUOT,                           KC_LBRC, KC_LPRN, KC_MINS, KC_BSLS, KC_SLSH, _______,
+        _______, _______, _______, _______,  KC_DOT, _______,                           _______, KC_LCBR, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                             _______, _______, _______,         _______, _______, _______
     ),
@@ -147,13 +162,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                             _______, _______, _______,         _______, _______, _______
     ),
 
-    [3] = LAYOUT_let(
-        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
-                          _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
-                                            _______, _______, _______,         _______, _______, _______
-    ),
 
     [4] = LAYOUT_let(
         _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
@@ -207,38 +215,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 void leader_end_user(void) {
     if (leader_sequence_one_key(KC_SPC)) {
         tap_code16(KC_UNDS);
-    } else if (leader_sequence_one_key(KC_M)) {
-        auto_mouse_toggle();
-        layer_invert(_NAV);
     } else if (leader_sequence_one_key(KC_DOT)) {
         SEND_STRING("->");
+    } else if (leader_sequence_one_key(KC_S)) {
+        SEND_STRING(SS_LGUI(SS_LSFT("4")));
+        layer_on(_NAV);
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
-        tap_code16(QK_BOOT);
+        reset_keyboard();
     }
 }
 
+// returning true from this function will end the leader sequence
+// immediately without waiting to timeout
+// this means these sequences in this function will immediately resolve
+// instead of waiting for the delay
 bool leader_add_user(uint16_t keycode) {
-    if (leader_sequence_one_key(KC_SPC)) {
-        return true;
-    }
-    if (leader_sequence_one_key(KC_M)) {
-        return true;
-    }
-    if (leader_sequence_one_key(KC_DOT)) {
-        return true;
-    }
-
-    return false;
-}
-
-void keyboard_post_init_user(void) {
-    pointing_device_set_cpi_on_side(true, 100);
-    pointing_device_set_cpi_on_side(false, 1000);
+    return leader_sequence_one_key(KC_SPC) ||
+           leader_sequence_one_key(KC_DOT) ||
+           leader_sequence_one_key(KC_S);
 }
 
 void pointing_device_init_user(void) {
-    set_auto_mouse_layer(_NAV);
-    set_auto_mouse_enable(true);
     charybdis_set_pointer_dragscroll_enabled(true, true);
 }
 
