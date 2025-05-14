@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Script to poll for a volume and copy a file to it.
+
+# Check if the correct number of arguments is provided
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <VolumeName> <FilePathToCopy>"
+    echo "Example: $0 \"My External Drive\" \"/path/to/my/document.txt\""
+    exit 1
+fi
+
+VOLUME_NAME="$1"
+FILE_TO_COPY="$2"
+# Construct the expected mount path for the volume
+VOLUME_MOUNT_PATH="/Volumes/$VOLUME_NAME"
+
+# --- Sanity Checks ---
+
+# 1. Check if the source file exists
+if [ ! -f "$FILE_TO_COPY" ]; then
+    echo "Error: Source file '$FILE_TO_COPY' not found."
+    exit 1
+fi
+
+# --- Polling for Volume ---
+echo "Waiting for volume '$VOLUME_NAME' to become available at '$VOLUME_MOUNT_PATH'..."
+
+while true; do
+    # Check if the directory for the volume exists (indicating it's mounted)
+    if [ -d "$VOLUME_MOUNT_PATH" ]; then
+        echo "Volume '$VOLUME_NAME' is now available."
+        break # Exit the loop
+    fi
+    # Wait for a few seconds before checking again
+    sleep 5
+    echo -n "." # Print a dot for visual feedback without a newline
+done
+
+echo # Add a newline after the dots
+
+# --- Copying the File ---
+echo "Attempting to copy '$FILE_TO_COPY' to the root of '$VOLUME_NAME' ($VOLUME_MOUNT_PATH/)..."
+
+# The destination for the copy is the root of the mounted volume
+DESTINATION_PATH="$VOLUME_MOUNT_PATH/"
+
+if cp "$FILE_TO_COPY" "$DESTINATION_PATH"; then
+    echo "File successfully copied to '$DESTINATION_PATH'."
+else
+    echo "Error: Failed to copy '$FILE_TO_COPY' to '$DESTINATION_PATH'."
+    echo "Please check permissions or available space on the volume."
+    exit 1 # Exit with an error code
+fi
+
+exit 0 # Exit successfully
