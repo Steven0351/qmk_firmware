@@ -8,6 +8,7 @@
 #include "action_util.h"
 #include "caps_word.h"
 #include "color.h"
+#include "config.h"
 #include "info_config.h"
 #include "keyboard.h"
 #include "keycodes.h"
@@ -31,6 +32,41 @@ enum layer_names {
     _NAV
 };
 
+enum led_states {
+    LAYER_ENGRAM,
+    LAYER_SYMBOL,
+    LAYER_NAV,
+    ACTION_CAPS_WORD,
+    ACTION_NUM_WORD,
+};
+
+void set_led_colors(enum led_states led_state) {
+    switch (led_state) {
+        case LAYER_ENGRAM:
+            rgb_matrix_sethsv(HSV_PURPLE);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            return;
+        case LAYER_SYMBOL:
+            rgb_matrix_sethsv(HSV_MAGENTA);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            return;
+        case LAYER_NAV:
+            rgb_matrix_sethsv(HSV_CORAL);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            return;
+        case ACTION_CAPS_WORD:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_UP_DOWN);
+            return;
+        case ACTION_NUM_WORD:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
+            return;
+        default:
+            rgb_matrix_sethsv(HSV_PURPLE);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            return;
+    }
+}
+
 const uint16_t num_layer_timeout = 5000;
 static uint16_t num_layer_idle_timer = 0;
 static bool num_layer_word_active = false;
@@ -42,6 +78,7 @@ void num_layer_word_on(void) {
     num_layer_word_active = true;
     num_layer_idle_timer = timer_read() + num_layer_timeout;
     layer_on(_SYMBOL);
+    set_led_colors(ACTION_NUM_WORD);
 }
 
 void num_layer_word_off(void) {
@@ -51,6 +88,7 @@ void num_layer_word_off(void) {
 
     layer_off(_SYMBOL);
     num_layer_word_active = false;
+    set_led_colors(get_highest_layer(layer_state));
 }
 
 bool process_num_layer_word(uint16_t keycode, keyrecord_t* record) {
@@ -86,8 +124,11 @@ void housekeeping_task_user(void) {
 }
 
 enum custom_keycodes {
+    // screen shot
     UK_SCSH = SAFE_RANGE,
+    // layer clear - used for getting back to the base layer
     UK_LRCL,
+    UK_HIDE,
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -109,7 +150,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
 
             break;
-
+        case UK_HIDE:
+            SEND_STRING(SS_LGUI("h"));
+            break;
     }
 
     return true;
@@ -173,30 +216,33 @@ tap_dance_action_t tap_dance_actions[] = {
 #define UK_COPY LGUI(KC_C)
 #define UK_PSTE RGUI(KC_V)
 #define UK_LOCK LGUI(LCTL(KC_Q))
+#define UK_AICH HYPR(KC_TILD)
+#define UK_TERM HYPR(KC_1)
+#define UK_BRSR HYPR(KC_2)
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ENGRAM] = LAYOUT_let(
-        KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SLSH,
-        KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  UK_COPY,                        TT(_NAV),  HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_SCLN,
-        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     UK_PSTE,                        UK_LOCK,   KC_R,     KC_M,     KC_F,     KC_P,     OSM_MEH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_MCTL,  KC_MUTE,    KC_VOLU,  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
-                                                 KC_BSPC,  UK_TDNW,  KC_MPLY,    KC_VOLD,  OSM_LSFT,  KC_SPC
+        KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
+        KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
+        KC_EQL,   KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
+                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  OSM_MEH,  UK_BRSR,    TT(_NAV), UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
+                                                 KC_BSPC,  UK_TDNW,  UK_TERM,   UK_AICH,  OSM_LSFT,  KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
-        _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-        UK_LRCL, KC_GRV,  KC_PLUS, KC_EQL,  KC_COMM, KC_QUOT,                           KC_LBRC, KC_LPRN, KC_MINS, KC_BSLS, KC_SLSH, _______,
-        _______, _______, _______, _______, KC_DOT,  _______,                           _______, KC_LCBR, _______, _______, _______, _______,
+        _______, _______, _______, KC_EQL,  _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, _______,
+        UK_LRCL, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
+        _______, KC_TILD, KC_GRV,  KC_COMM, KC_DOT,  _______,                           _______, KC_LBRC, KC_BSLS, _______, _______, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                             _______, _______, _______,         _______, _______, _______
     ),
 
     [_NAV] = LAYOUT_let(
-        _______, _______, _______, _______, _______, _______,                           _______, UK_RDM,  _______, _______, _______, _______,
-        UK_LRCL, MS_BTN1, MS_BTN2, UK_RST,  _______, _______,                           _______, _______, _______, _______, _______, _______,
-        _______, _______, UK_SRC,  _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
-                          _______, _______, _______, _______, _______,         MS_BTN1, MS_BTN2, UK_SRC,  _______, _______,
+        _______, KC_VOLU, KC_VOLD, KC_MPLY, KC_MUTE, _______,                           UK_HIDE, UK_RDM,  _______, _______, _______, _______,
+        UK_LRCL, MS_BTN1, MS_BTN2, KC_LSFT, KC_LGUI, _______,                           MS_BTN1, MS_BTN2, _______, _______, _______, _______,
+        _______, UK_RST,  _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
+                          _______, _______, _______, _______, _______,         _______, _______, _______,  _______, _______,
                                             _______, _______, _______,         _______, _______, _______
     ),
 };
@@ -225,6 +271,22 @@ void pointing_device_init_user(void) {
     charybdis_set_pointer_dragscroll_enabled(true, true);
 }
 
+void oneshot_mods_changed_user(uint8_t mods) {
+    if (mods & MOD_MASK_SHIFT) {
+        set_led_colors(ACTION_CAPS_WORD);
+    } else {
+        set_led_colors(get_highest_layer(layer_state));
+    }
+}
+
+void caps_word_set_user(bool active) {
+    if (active) {
+        set_led_colors(ACTION_CAPS_WORD);
+    } else {
+        set_led_colors(get_highest_layer(layer_state));
+    }
+}
+
 bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
         // Keycodes that continue Caps Word, with shift applied.
@@ -248,17 +310,6 @@ bool caps_word_press_user(uint16_t keycode) {
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    switch (get_highest_layer(state)) {
-        case _SYMBOL:
-            rgb_matrix_sethsv(HSV_MAGENTA);
-            break;
-        case _NAV:
-            rgb_matrix_sethsv(HSV_CORAL);
-            break;
-        default:
-            rgb_matrix_sethsv(HSV_PURPLE);
-            break;
-    }
+    set_led_colors(get_highest_layer(state));
     return state;
 }
-
