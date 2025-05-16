@@ -225,9 +225,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ENGRAM] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
-        KC_EQL,   KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  OSM_MEH,  UK_BRSR,    TT(_NAV), UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
-                                                 KC_BSPC,  UK_TDNW,  UK_TERM,   UK_AICH,  OSM_LSFT,  KC_SPC
+        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
+                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_EQL,   UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
+                                                 KC_BSPC,  UK_TDNW,  UK_TERM,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
