@@ -142,9 +142,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             layer_on(_NAV);
             return false;
         case UK_LRCL:
-            uint8_t current_layer = get_highest_layer(layer_state);
-
-            if (current_layer > _ENGRAM) {
+            if (get_highest_layer(layer_state) > _ENGRAM) {
                 layer_clear();
                 return false;
             }
@@ -204,6 +202,7 @@ tap_dance_action_t tap_dance_actions[] = {
 #define OSM_HYPR OSM(MOD_HYPR)
 #define OSM_MEH OSM(MOD_MEH)
 #define OSM_LSFT OSM(MOD_LSFT)
+#define OSM_ACTL OSM(MOD_LCTL | MOD_LALT)
 #define TT_NAV TT(_NAV)
 #define HM_LCTC LCTL_T(KC_C)
 #define HM_LALI LALT_T(KC_I)
@@ -219,6 +218,7 @@ tap_dance_action_t tap_dance_actions[] = {
 #define UK_AICH HYPR(KC_TILD)
 #define UK_TERM HYPR(KC_1)
 #define UK_BRSR HYPR(KC_2)
+#define UK_AERO HYPR(KC_0)
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -226,12 +226,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_EQL,   UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
+                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  OSM_ACTL,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
                                                  KC_BSPC,  UK_TDNW,  UK_TERM,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
     [_SYMBOL] = LAYOUT_let(
-        _______, _______, _______, KC_EQL,  _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, _______,
+        _______, _______, KC_TILD, KC_EQL,  _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, _______,
         UK_LRCL, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
         _______, KC_TILD, KC_GRV,  KC_COMM, KC_DOT,  _______,                           _______, KC_LBRC, KC_BSLS, _______, _______, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
