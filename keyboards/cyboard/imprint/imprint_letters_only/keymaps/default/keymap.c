@@ -28,13 +28,15 @@
 
 enum layer_names {
     _ENGRAM,
-    _SYMBOL,
+    _NUM,
+    _SYM,
     _NAV
 };
 
 enum led_states {
     LAYER_ENGRAM,
-    LAYER_SYMBOL,
+    LAYER_NUM,
+    LAYER_SYM,
     LAYER_NAV,
     ACTION_CAPS_WORD,
     ACTION_NUM_WORD,
@@ -46,9 +48,13 @@ void set_led_colors(enum led_states led_state) {
             rgb_matrix_sethsv(HSV_PURPLE);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
-        case LAYER_SYMBOL:
+        case LAYER_NUM:
             rgb_matrix_sethsv(HSV_MAGENTA);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            return;
+        case LAYER_SYM:
+            rgb_matrix_sethsv(HSV_CYAN);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case LAYER_NAV:
             rgb_matrix_sethsv(HSV_CORAL);
@@ -77,7 +83,7 @@ void num_layer_word_on(void) {
     }
     num_layer_word_active = true;
     num_layer_idle_timer = timer_read() + num_layer_timeout;
-    layer_on(_SYMBOL);
+    layer_on(_NUM);
     set_led_colors(ACTION_NUM_WORD);
 }
 
@@ -86,7 +92,7 @@ void num_layer_word_off(void) {
         return;
     }
 
-    layer_off(_SYMBOL);
+    layer_off(_NUM);
     num_layer_word_active = false;
     set_led_colors(get_highest_layer(layer_state));
 }
@@ -159,7 +165,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void dance_one_shot_num_word(tap_dance_state_t *state, void *user_data) {
     switch (state->count) {
         case 1:
-            set_oneshot_layer(_SYMBOL, ONESHOT_START);
+            set_oneshot_layer(_NUM, ONESHOT_START);
             break;
         case 2:
             num_layer_word_on();
@@ -219,6 +225,7 @@ tap_dance_action_t tap_dance_actions[] = {
 #define UK_TERM HYPR(KC_1)
 #define UK_BRSR HYPR(KC_2)
 #define UK_AERO HYPR(KC_0)
+#define UK_SYMB OSL(_SYM)
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -226,16 +233,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  OSM_ACTL,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
-                                                 KC_BSPC,  UK_TDNW,  UK_TERM,   UK_AICH,   OSM_LSFT,  KC_SPC
+                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_LBRC,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
+                                                 KC_BSPC,  UK_TDNW,  UK_SYMB,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
-    [_SYMBOL] = LAYOUT_let(
-        _______, _______, KC_TILD, KC_EQL,  _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, _______,
+    [_NUM] = LAYOUT_let(
+        _______, _______, _______, _______, _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, KC_BSLS,
         UK_LRCL, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-        _______, KC_TILD, KC_GRV,  KC_COMM, KC_DOT,  _______,                           _______, KC_LBRC, KC_BSLS, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______,                           _______, KC_COMM, KC_DOT,  _______, _______, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                             _______, _______, _______,         _______, _______, _______
+    ),
+
+    [_SYM] = LAYOUT_let(
+        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, KC_BSLS,
+        UK_LRCL, KC_GRV,  KC_TILD, KC_EQL,  KC_AMPR, _______,                           _______, KC_PIPE, KC_PLUS, _______, KC_ASTR, _______,
+        _______, _______, _______, _______, _______, _______,                           _______, KC_DOT,  KC_SLSH, _______, _______, _______,
+                          _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
+                                            _______, _______, _______,         _______, _______, KC_MINS
     ),
 
     [_NAV] = LAYOUT_let(
@@ -252,6 +267,14 @@ void leader_end_user(void) {
         tap_code16(KC_UNDS);
     } else if (leader_sequence_one_key(KC_DOT)) {
         SEND_STRING("->");
+    } else if (leader_sequence_one_key(KC_SLSH)) {
+        SEND_STRING("./");
+    } else if (leader_sequence_one_key(KC_A)) {
+        SEND_STRING("&&");
+    } else if (leader_sequence_one_key(KC_H)) {
+        SEND_STRING("||");
+    } else if (leader_sequence_one_key(KC_E)) {
+        SEND_STRING("==");
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
     }
@@ -264,7 +287,10 @@ void leader_end_user(void) {
 bool leader_add_user(uint16_t keycode) {
     return leader_sequence_one_key(KC_SPC) ||
            leader_sequence_one_key(KC_DOT) ||
-           leader_sequence_one_key(KC_S);
+           leader_sequence_one_key(KC_A)   ||
+           leader_sequence_one_key(KC_H)   ||
+           leader_sequence_one_key(KC_E)   ||
+           leader_sequence_one_key(KC_SLSH);
 }
 
 void pointing_device_init_user(void) {
