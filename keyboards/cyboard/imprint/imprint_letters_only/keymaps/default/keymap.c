@@ -50,7 +50,7 @@ void set_led_colors(enum led_states led_state) {
             return;
         case LAYER_NUM:
             rgb_matrix_sethsv(HSV_MAGENTA);
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case LAYER_SYM:
             rgb_matrix_sethsv(HSV_CYAN);
@@ -58,7 +58,7 @@ void set_led_colors(enum led_states led_state) {
             return;
         case LAYER_NAV:
             rgb_matrix_sethsv(HSV_CORAL);
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case ACTION_CAPS_WORD:
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_UP_DOWN);
@@ -121,7 +121,7 @@ bool process_num_layer_word(uint16_t keycode, keyrecord_t* record) {
 
 void num_layer_idle_task(void) {
     if (num_layer_word_active && timer_expired(timer_read(), num_layer_idle_timer)) {
-        caps_word_off();
+        num_layer_word_off();
     }
 }
 
@@ -233,8 +233,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  KC_LBRC,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
-                                                 KC_BSPC,  UK_TDNW,  UK_SYMB,   UK_AICH,   OSM_LSFT,  KC_SPC
+                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  UK_SYMB,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
+                                                 KC_BSPC,  UK_TDNW,  KC_LBRC,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
     [_NUM] = LAYOUT_let(
