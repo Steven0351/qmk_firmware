@@ -29,14 +29,12 @@
 enum layer_names {
     _ENGRAM,
     _NUM,
-    _SYM,
     _NAV
 };
 
 enum led_states {
     LAYER_ENGRAM,
     LAYER_NUM,
-    LAYER_SYM,
     LAYER_NAV,
     ACTION_CAPS_WORD,
     ACTION_NUM_WORD,
@@ -45,19 +43,15 @@ enum led_states {
 void set_led_colors(enum led_states led_state) {
     switch (led_state) {
         case LAYER_ENGRAM:
-            rgb_matrix_sethsv(HSV_PURPLE);
+            rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
         case LAYER_NUM:
-            rgb_matrix_sethsv(HSV_MAGENTA);
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
-            return;
-        case LAYER_SYM:
-            rgb_matrix_sethsv(HSV_CYAN);
+            rgb_matrix_sethsv_noeeprom(HSV_MAGENTA);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case LAYER_NAV:
-            rgb_matrix_sethsv(HSV_CORAL);
+            rgb_matrix_sethsv_noeeprom(HSV_CORAL);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case ACTION_CAPS_WORD:
@@ -67,7 +61,7 @@ void set_led_colors(enum led_states led_state) {
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         default:
-            rgb_matrix_sethsv(HSV_PURPLE);
+            rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
     }
@@ -179,16 +173,10 @@ void dance_one_shot_num_word_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
-const key_override_t left_curly_brace_override = ko_make_basic(MOD_MASK_SHIFT, KC_LCBR, KC_RCBR);
-const key_override_t left_bracket_override = ko_make_basic(MOD_MASK_SHIFT, KC_LBRC, KC_RBRC);
-const key_override_t left_paren_override = ko_make_basic(MOD_MASK_SHIFT, KC_LPRN, KC_RPRN);
 const key_override_t volup_next_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLU, KC_MNXT);
 const key_override_t voldown_prev_track_override = ko_make_basic(MOD_MASK_SHIFT, KC_VOLD, KC_MPRV);
 
 const key_override_t *key_overrides[] = {
-    &left_curly_brace_override,
-    &left_bracket_override,
-    &left_paren_override,
     &volup_next_track_override,
     &voldown_prev_track_override
 };
@@ -209,7 +197,11 @@ tap_dance_action_t tap_dance_actions[] = {
 #define OSM_MEH OSM(MOD_MEH)
 #define OSM_LSFT OSM(MOD_LSFT)
 #define OSM_ACTL OSM(MOD_LCTL | MOD_LALT)
-#define TT_NAV TT(_NAV)
+
+#define UK_AICH HYPR(KC_TILD)
+#define UK_BRSR HYPR(KC_2)
+
+// homerow mods
 #define HM_LCTC LCTL_T(KC_C)
 #define HM_LALI LALT_T(KC_I)
 #define HM_HYPE HYPR_T(KC_E)
@@ -218,37 +210,34 @@ tap_dance_action_t tap_dance_actions[] = {
 #define HM_HYPT HYPR_T(KC_T)
 #define HM_RALS RALT_T(KC_S)
 #define HM_RCTN RCTL_T(KC_N)
-#define UK_COPY LGUI(KC_C)
-#define UK_PSTE RGUI(KC_V)
-#define UK_LOCK LGUI(LCTL(KC_Q))
-#define UK_AICH HYPR(KC_TILD)
-#define UK_TERM HYPR(KC_1)
-#define UK_BRSR HYPR(KC_2)
-#define UK_AERO HYPR(KC_0)
-#define UK_SYMB OSL(_SYM)
 
+const uint16_t PROGMEM left_combo[] = {KC_G, KC_X, COMBO_END};
+const uint16_t PROGMEM right_combo[] = {KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM up_combo[] = {KC_R, KC_M, COMBO_END};
+const uint16_t PROGMEM down_combo[] = {KC_F, KC_P, COMBO_END};
+
+combo_t key_combos[] = {
+    COMBO(left_combo, KC_LEFT),
+    COMBO(right_combo, KC_RIGHT), // keycodes with modifiers are possible too!
+    COMBO(up_combo, KC_UP),
+    COMBO(down_combo, KC_DOWN),
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ENGRAM] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
-        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_LCBR,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LEFT,  KC_RIGHT,  QK_LEAD,  UK_SYMB,  UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_UP,    KC_DOWN,
-                                                 KC_BSPC,  UK_TDNW,  KC_LBRC,   UK_AICH,   OSM_LSFT,  KC_SPC
+        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
+                            KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
+                                                 KC_BSPC,  UK_TDNW,  OSM_MEH,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
+    // NOTE: I really need to think about the number and symbol layers. The number row itself feels intuitive enough, but I kind of don't
+    // like having to shift the numbers to get to the shifted variations, though it does feel fine when in "num word" mode.
     [_NUM] = LAYOUT_let(
-        _______, _______, _______, _______, _______, _______,                           _______, KC_PLUS, KC_MINS, KC_SLSH, KC_ASTR, KC_BSLS,
-        UK_LRCL, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-        _______, _______, _______, _______, _______, _______,                           _______, KC_COMM, KC_DOT,  _______, _______, _______,
-                          _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
-                                            _______, _______, _______,         _______, _______, _______
-    ),
-
-    [_SYM] = LAYOUT_let(
-        _______, _______, _______, _______, _______, _______,                           _______, _______, _______, _______, _______, KC_BSLS,
-        UK_LRCL, KC_GRV,  KC_TILD, KC_EQL,  KC_AMPR, _______,                           _______, KC_PIPE, KC_PLUS, _______, KC_ASTR, _______,
-        _______, _______, _______, _______, _______, _______,                           _______, KC_DOT,  KC_SLSH, _______, _______, _______,
+        _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSLS,
+        UK_LRCL, KC_GRV,  KC_TILD, KC_EQL,  KC_AMPR, _______,                           _______, KC_PIPE, KC_PLUS, KC_MINS, _______, _______,
+        _______, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                           KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                             _______, _______, _______,         _______, _______, KC_MINS
     ),
@@ -275,6 +264,8 @@ void leader_end_user(void) {
         SEND_STRING("||");
     } else if (leader_sequence_one_key(KC_E)) {
         SEND_STRING("==");
+    } else if (leader_sequence_one_key(KC_SCLN)) {
+        SEND_STRING("::");
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
     }
@@ -290,19 +281,12 @@ bool leader_add_user(uint16_t keycode) {
            leader_sequence_one_key(KC_A)   ||
            leader_sequence_one_key(KC_H)   ||
            leader_sequence_one_key(KC_E)   ||
+           leader_sequence_one_key(KC_SCLN)||
            leader_sequence_one_key(KC_SLSH);
 }
 
 void pointing_device_init_user(void) {
     charybdis_set_pointer_dragscroll_enabled(true, true);
-}
-
-void oneshot_mods_changed_user(uint8_t mods) {
-    if (mods & MOD_MASK_SHIFT) {
-        set_led_colors(ACTION_CAPS_WORD);
-    } else {
-        set_led_colors(get_highest_layer(layer_state));
-    }
 }
 
 void caps_word_set_user(bool active) {
@@ -338,4 +322,8 @@ bool caps_word_press_user(uint16_t keycode) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     set_led_colors(get_highest_layer(state));
     return state;
+}
+
+void keyboard_post_init_user(void) {
+    set_led_colors(LAYER_ENGRAM);
 }

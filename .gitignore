@@ -1,3 +1,9 @@
+# Personal files
+imprint.json
+imprint.yaml
+.lazy.lua
+keymap_visual.md
+system_profiler.txt
 # Junk files
 *.bak
 *.swp
