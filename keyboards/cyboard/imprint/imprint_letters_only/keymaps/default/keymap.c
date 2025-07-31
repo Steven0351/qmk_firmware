@@ -243,7 +243,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NAV] = LAYOUT_let(
-        _______, KC_VOLU, KC_VOLD, KC_MPLY, KC_MUTE, _______,                           UK_HIDE, UK_RDM,  _______, _______, _______, _______,
+        KC_VOLD, KC_MPRV, KC_MPLY, KC_MUTE, KC_MNXT, KC_VOLU,                           UK_HIDE, UK_RDM,  _______, _______, _______, _______,
         UK_LRCL, MS_BTN1, MS_BTN2, KC_LSFT, KC_LGUI, _______,                           MS_BTN1, MS_BTN2, _______, _______, _______, _______,
         _______, UK_RST,  _______, _______, _______, _______,                           _______, _______, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______,         _______, _______, _______,  _______, _______,
