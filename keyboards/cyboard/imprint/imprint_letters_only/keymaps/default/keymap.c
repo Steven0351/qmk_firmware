@@ -26,8 +26,16 @@
 #include QMK_KEYBOARD_H
 #include <cyboard.h>
 
+enum platforms {
+    PLATFORM_MAC,
+    PLATFORM_WIN,
+};
+
+static enum platforms current_platform = PLATFORM_MAC;
+
 enum layer_names {
-    _ENGRAM,
+    _ENGRAM_MAC,
+    _ENGRAM_WIN,
     _NUM,
     _NAV
 };
@@ -43,7 +51,15 @@ enum led_states {
 void set_led_colors(enum led_states led_state) {
     switch (led_state) {
         case LAYER_ENGRAM:
-            rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+            switch (current_platform) {
+                case PLATFORM_MAC:
+                    rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+                    break;
+                case PLATFORM_WIN:
+                    rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
+                    break;
+            }
+
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
         case LAYER_NUM:
@@ -142,7 +158,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             layer_on(_NAV);
             return false;
         case UK_LRCL:
-            if (get_highest_layer(layer_state) > _ENGRAM) {
+            if (get_highest_layer(layer_state) > _ENGRAM_MAC) {
                 layer_clear();
                 return false;
             }
@@ -210,6 +226,11 @@ tap_dance_action_t tap_dance_actions[] = {
 #define HM_HYPT HYPR_T(KC_T)
 #define HM_RALS RALT_T(KC_S)
 #define HM_RCTN RCTL_T(KC_N)
+#define HM_MEHE MEH_T(KC_ESC)
+
+// windows-specific homerow mods
+#define HM_LGUC LGUI_T(KC_C)
+#define HM_LCTA LCTL_T(KC_A)
 
 const uint16_t PROGMEM left_combo[] = {KC_G, KC_X, COMBO_END};
 const uint16_t PROGMEM right_combo[] = {KC_J, KC_K, COMBO_END};
@@ -218,15 +239,23 @@ const uint16_t PROGMEM down_combo[] = {KC_F, KC_P, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(left_combo, KC_LEFT),
-    COMBO(right_combo, KC_RIGHT), // keycodes with modifiers are possible too!
+    COMBO(right_combo, KC_RIGHT),
     COMBO(up_combo, KC_UP),
     COMBO(down_combo, KC_DOWN),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [_ENGRAM] = LAYOUT_let(
+    [_ENGRAM_MAC] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
-        KC_ESC,   HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
+        HM_MEHE,  HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
+        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
+                            KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
+                                                 KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
+    ),
+
+    [_ENGRAM_WIN] = LAYOUT_let(
+        KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
+        HM_MEHE,  HM_LGUC,  HM_LALI,  HM_HYPE,   HM_LCTA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
                             KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
                                                  KC_BSPC,  UK_TDNW,  OSM_MEH,   UK_AICH,   OSM_LSFT,  KC_SPC
@@ -266,6 +295,16 @@ void leader_end_user(void) {
         SEND_STRING("==");
     } else if (leader_sequence_one_key(KC_SCLN)) {
         SEND_STRING("::");
+    } else if (leader_sequence_one_key(KC_C)) {
+        SEND_STRING(SS_LCTL(SS_LALT(SS_LSFT(SS_LGUI("~")))));
+    } else if (leader_sequence_three_keys(KC_M, KC_A, KC_C)) {
+        set_single_default_layer(_ENGRAM_MAC);
+        current_platform = PLATFORM_MAC;
+        set_led_colors(LAYER_ENGRAM);
+    } else if (leader_sequence_three_keys(KC_W, KC_I, KC_N)) {
+        set_single_default_layer(_ENGRAM_WIN);
+        current_platform = PLATFORM_WIN;
+        set_led_colors(LAYER_ENGRAM);
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
     }
@@ -281,6 +320,7 @@ bool leader_add_user(uint16_t keycode) {
            leader_sequence_one_key(KC_A)   ||
            leader_sequence_one_key(KC_H)   ||
            leader_sequence_one_key(KC_E)   ||
+           leader_sequence_one_key(KC_C)   ||
            leader_sequence_one_key(KC_SCLN)||
            leader_sequence_one_key(KC_SLSH);
 }
