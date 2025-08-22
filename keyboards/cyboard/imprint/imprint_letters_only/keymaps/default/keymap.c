@@ -218,7 +218,7 @@ const uint16_t PROGMEM down_combo[] = {KC_F, KC_P, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(left_combo, KC_LEFT),
-    COMBO(right_combo, KC_RIGHT), // keycodes with modifiers are possible too!
+    COMBO(right_combo, KC_RIGHT),
     COMBO(up_combo, KC_UP),
     COMBO(down_combo, KC_DOWN),
 };
