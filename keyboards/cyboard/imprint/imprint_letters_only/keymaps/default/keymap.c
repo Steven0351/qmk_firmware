@@ -244,12 +244,6 @@ tap_dance_action_t tap_dance_actions[] = {
 #define HM_RCTN RCTL_T(KC_N)
 #define HM_MEHE MEH_T(KC_ESC)
 
-// windows-specific homerow mods
-#define HM_LGUC LGUI_T(KC_C)
-#define HM_LCTA LCTL_T(KC_A)
-#define HM_RGUN RGUI_T(KC_N)
-#define HM_RCTH RCTL_T(KC_H)
-
 const uint16_t PROGMEM left_combo[] = {KC_G, KC_X, COMBO_END};
 const uint16_t PROGMEM right_combo[] = {KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM up_combo[] = {KC_R, KC_M, COMBO_END};
@@ -273,7 +267,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_ENGRAM_WIN] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
-        HM_MEHE,  HM_LGUC,  HM_LALI,  HM_HYPE,   HM_LCTA,  KC_COMM,                        KC_DOT,    HM_RCTH,  HM_HYPT,  HM_RALS,  HM_RGUN,  KC_QUOT,
+        HM_MEHE,  HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
                             KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
                                                  KC_BSPC,  UK_TDNW,  OSM_MEH,   UK_AICH,   OSM_LSFT,  KC_SPC
