@@ -41,8 +41,8 @@ enum layer_names {
 };
 
 enum led_states {
-    LAYER_ENGRAM,
-    LAYER_NUM,
+    LAYER_DEFAULT,
+    LAYER_NUM = 2,
     LAYER_NAV,
     ACTION_CAPS_WORD,
     ACTION_NUM_WORD,
@@ -50,14 +50,14 @@ enum led_states {
 
 void set_led_colors(enum led_states led_state) {
     switch (led_state) {
-        case LAYER_ENGRAM:
+        case LAYER_DEFAULT:
             switch (current_platform) {
-                case PLATFORM_MAC:
-                    rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
-                    break;
-                case PLATFORM_WIN:
-                    rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
-                    break;
+            case PLATFORM_MAC:
+                rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+                break;
+            case PLATFORM_WIN:
+                rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
+                break;
             }
 
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
@@ -77,7 +77,7 @@ void set_led_colors(enum led_states led_state) {
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         default:
-            rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+            rgb_matrix_sethsv_noeeprom(HSV_GREEN);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
     }
@@ -104,7 +104,7 @@ void num_layer_word_off(void) {
 
     layer_off(_NUM);
     num_layer_word_active = false;
-    set_led_colors(get_highest_layer(layer_state));
+    // set_led_colors(get_highest_layer(layer_state));
 }
 
 bool process_num_layer_word(uint16_t keycode, keyrecord_t* record) {
@@ -154,7 +154,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     switch (keycode) {
         case UK_SCSH:
-            SEND_STRING(SS_LGUI(SS_LSFT("4")));
+            switch (current_platform) {
+            case PLATFORM_MAC:
+                SEND_STRING(SS_LGUI(SS_LSFT("4")));
+                break;
+            case PLATFORM_WIN:
+                SEND_STRING(SS_LGUI(SS_LSFT("s")));
+                break;
+            }
+
             layer_on(_NAV);
             return false;
         case UK_LRCL:
@@ -165,7 +173,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             break;
         case UK_HIDE:
-            SEND_STRING(SS_LGUI("h"));
+            switch (current_platform) {
+            case PLATFORM_MAC:
+                SEND_STRING(SS_LGUI("h"));
+                break;
+            case PLATFORM_WIN:
+                SEND_STRING(SS_LGUI("d"));
+                break;
+            }
+
             break;
     }
 
@@ -231,6 +247,8 @@ tap_dance_action_t tap_dance_actions[] = {
 // windows-specific homerow mods
 #define HM_LGUC LGUI_T(KC_C)
 #define HM_LCTA LCTL_T(KC_A)
+#define HM_RGUN RGUI_T(KC_N)
+#define HM_RCTH RCTL_T(KC_H)
 
 const uint16_t PROGMEM left_combo[] = {KC_G, KC_X, COMBO_END};
 const uint16_t PROGMEM right_combo[] = {KC_J, KC_K, COMBO_END};
@@ -255,7 +273,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_ENGRAM_WIN] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
-        HM_MEHE,  HM_LGUC,  HM_LALI,  HM_HYPE,   HM_LCTA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
+        HM_MEHE,  HM_LGUC,  HM_LALI,  HM_HYPE,   HM_LCTA,  KC_COMM,                        KC_DOT,    HM_RCTH,  HM_HYPT,  HM_RALS,  HM_RGUN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
                             KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
                                                  KC_BSPC,  UK_TDNW,  OSM_MEH,   UK_AICH,   OSM_LSFT,  KC_SPC
@@ -298,13 +316,13 @@ void leader_end_user(void) {
     } else if (leader_sequence_one_key(KC_C)) {
         SEND_STRING(SS_LCTL(SS_LALT(SS_LSFT(SS_LGUI("~")))));
     } else if (leader_sequence_three_keys(KC_M, KC_A, KC_C)) {
-        set_single_default_layer(_ENGRAM_MAC);
         current_platform = PLATFORM_MAC;
-        set_led_colors(LAYER_ENGRAM);
+        set_single_default_layer(_ENGRAM_MAC);
+        set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_three_keys(KC_W, KC_I, KC_N)) {
-        set_single_default_layer(_ENGRAM_WIN);
         current_platform = PLATFORM_WIN;
-        set_led_colors(LAYER_ENGRAM);
+        set_single_default_layer(_ENGRAM_WIN);
+        set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
     }
@@ -365,5 +383,5 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 }
 
 void keyboard_post_init_user(void) {
-    set_led_colors(LAYER_ENGRAM);
+    set_led_colors(LAYER_DEFAULT);
 }
