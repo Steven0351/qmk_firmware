@@ -31,19 +31,20 @@ enum platforms {
     PLATFORM_WIN,
 };
 
-static enum platforms current_platform = PLATFORM_MAC;
+enum platforms current_platform = PLATFORM_MAC;
 
 enum layer_names {
-    _ENGRAM_MAC,
-    _ENGRAM_WIN,
+    _ENGRAM,
     _NUM,
-    _NAV
+    _NAV,
+    _FN,
 };
 
 enum led_states {
     LAYER_DEFAULT,
-    LAYER_NUM = 2,
+    LAYER_NUM,
     LAYER_NAV,
+    LAYER_FN,
     ACTION_CAPS_WORD,
     ACTION_NUM_WORD,
 };
@@ -63,11 +64,15 @@ void set_led_colors(enum led_states led_state) {
             rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
             return;
         case LAYER_NUM:
-            rgb_matrix_sethsv_noeeprom(HSV_MAGENTA);
+            rgb_matrix_sethsv_noeeprom(HSV_RED);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case LAYER_NAV:
             rgb_matrix_sethsv_noeeprom(HSV_CORAL);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
+            return;
+        case LAYER_FN:
+            rgb_matrix_sethsv_noeeprom(HSV_CYAN);
             rgb_matrix_mode_noeeprom(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
             return;
         case ACTION_CAPS_WORD:
@@ -84,8 +89,8 @@ void set_led_colors(enum led_states led_state) {
 }
 
 const uint16_t num_layer_timeout = 5000;
-static uint16_t num_layer_idle_timer = 0;
-static bool num_layer_word_active = false;
+uint16_t num_layer_idle_timer = 0;
+bool num_layer_word_active = false;
 
 void num_layer_word_on(void) {
     if (num_layer_word_active) {
@@ -104,7 +109,6 @@ void num_layer_word_off(void) {
 
     layer_off(_NUM);
     num_layer_word_active = false;
-    // set_led_colors(get_highest_layer(layer_state));
 }
 
 bool process_num_layer_word(uint16_t keycode, keyrecord_t* record) {
@@ -166,7 +170,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             layer_on(_NAV);
             return false;
         case UK_LRCL:
-            if (get_highest_layer(layer_state) > _ENGRAM_MAC) {
+            if (get_highest_layer(layer_state) > _ENGRAM) {
                 layer_clear();
                 return false;
             }
@@ -183,6 +187,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
 
             break;
+    }
+
+    if (get_oneshot_layer() == _FN) {
+        clear_oneshot_layer_state(ONESHOT_PRESSED);
     }
 
     return true;
@@ -214,7 +222,7 @@ const key_override_t *key_overrides[] = {
 };
 
 enum tap_dances {
-    TD_OSL_NUM_WORD
+    TD_OSL_NUM_WORD,
 };
 
 tap_dance_action_t tap_dance_actions[] = {
@@ -257,20 +265,12 @@ combo_t key_combos[] = {
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [_ENGRAM_MAC] = LAYOUT_let(
+    [_ENGRAM] = LAYOUT_let(
         KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
         HM_MEHE,  HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
         OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
                             KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
                                                  KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
-    ),
-
-    [_ENGRAM_WIN] = LAYOUT_let(
-        KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
-        HM_MEHE,  HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
-        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
-                                                 KC_BSPC,  UK_TDNW,  OSM_MEH,   UK_AICH,   OSM_LSFT,  KC_SPC
     ),
 
     // NOTE: I really need to think about the number and symbol layers. The number row itself feels intuitive enough, but I kind of don't
@@ -290,6 +290,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                           _______, _______, _______, _______, _______,         _______, _______, _______,  _______, _______,
                                             _______, _______, _______,         _______, _______, _______
     ),
+
+    [_FN] = LAYOUT_let(
+        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,    KC_F6,                            KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
+        UK_LRCL, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
+                          _______, _______, _______,  _______, _______,        _______, _______, _______, _______, _______,
+                                            _______,  _______, _______,        _______, _______, _______
+    ),
+
 };
 
 void leader_end_user(void) {
@@ -309,13 +318,13 @@ void leader_end_user(void) {
         SEND_STRING("::");
     } else if (leader_sequence_one_key(KC_C)) {
         SEND_STRING(SS_LCTL(SS_LALT(SS_LSFT(SS_LGUI("~")))));
+    } else if (leader_sequence_two_keys(KC_F, KC_N)) {
+        set_oneshot_layer(_FN, ONESHOT_START);
     } else if (leader_sequence_three_keys(KC_M, KC_A, KC_C)) {
         current_platform = PLATFORM_MAC;
-        set_single_default_layer(_ENGRAM_MAC);
         set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_three_keys(KC_W, KC_I, KC_N)) {
         current_platform = PLATFORM_WIN;
-        set_single_default_layer(_ENGRAM_WIN);
         set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
