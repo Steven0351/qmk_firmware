@@ -38,6 +38,7 @@ enum layer_names {
     _NUM,
     _NAV,
     _FN,
+    _TMUX,
 };
 
 enum led_states {
@@ -151,9 +152,34 @@ enum custom_keycodes {
     UK_HIDE,
 };
 
+bool is_tmux(void) {
+    return get_highest_layer(layer_state) == _TMUX;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_num_layer_word(keycode, record)) {
         return false;
+    }
+
+    // Just apply the tmux prefixes we use for the platform before processing
+    if (is_tmux()) {
+        if (current_platform == PLATFORM_MAC) {
+            register_code(KC_LALT);
+            register_code(KC_LSFT);
+            register_code(KC_LCTL);
+            register_code(KC_A);
+
+            unregister_code(KC_LALT);
+            unregister_code(KC_LSFT);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_A);
+        } else {
+            register_code(KC_LALT);
+            register_code(KC_COMM);
+
+            unregister_code(KC_LALT);
+            unregister_code(KC_COMM);
+        }
     }
 
     switch (keycode) {
@@ -266,11 +292,11 @@ combo_t key_combos[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ENGRAM] = LAYOUT_let(
-        KC_TAB,   KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
-        HM_MEHE,  HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
-        OSM_MEH,  KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
-                            KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
-                                                 KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
+        KC_TAB,      KC_B,     KC_Y,     KC_O,      KC_U,     KC_Z,                           KC_Q,      KC_L,     KC_D,     KC_W,     KC_V,     KC_SCLN,
+        HM_MEHE,     HM_LCTC,  HM_LALI,  HM_HYPE,   HM_LGUA,  KC_COMM,                        KC_DOT,    HM_RGUH,  HM_HYPT,  HM_RALS,  HM_RCTN,  KC_QUOT,
+        TT(_TMUX),   KC_G,     KC_X,     KC_J,      KC_K,     KC_LPRN,                        KC_RPRN,   KC_R,     KC_M,     KC_F,     KC_P,     KC_SLSH,
+                               KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
+                                                    KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
     ),
 
     // NOTE: I really need to think about the number and symbol layers. The number row itself feels intuitive enough, but I kind of don't
@@ -299,6 +325,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                             _______,  _______, _______,        _______, _______, _______
     ),
 
+    // NOTE: This is mostly just a marker layer so that any key entered is prefixed with the platform-specific tmux prefix
+    [_TMUX] = LAYOUT_let(
+        _______, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
+        UK_LRCL, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
+                          _______, _______, _______,  _______, _______,        _______, _______, _______, _______, _______,
+                                            _______,  _______, _______,        _______, KC_LSFT, _______
+    )
 };
 
 void leader_end_user(void) {
