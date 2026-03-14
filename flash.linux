@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+echo "Put your keyboard into bootloader mode..."
+while ! sudo picotool info > /dev/null 2>&1; do sleep 0.1; done
+sudo picotool load "$1"
+sudo picotool reboot
