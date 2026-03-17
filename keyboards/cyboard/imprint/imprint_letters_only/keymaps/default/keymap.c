@@ -29,12 +29,15 @@
 enum platforms {
     PLATFORM_MAC,
     PLATFORM_WIN,
+    PLATFORM_GAMING,
+    PLATFORM_LINUX,
 };
 
-enum platforms current_platform = PLATFORM_MAC;
+enum platforms current_platform = PLATFORM_LINUX;
 
 enum layer_names {
     _ENGRAM,
+    _GAMING,
     _NUM,
     _NAV,
     _FN,
@@ -43,6 +46,7 @@ enum layer_names {
 
 enum led_states {
     LAYER_DEFAULT,
+    LAYER_GAMING,
     LAYER_NUM,
     LAYER_NAV,
     LAYER_FN,
@@ -55,10 +59,16 @@ void set_led_colors(enum led_states led_state) {
         case LAYER_DEFAULT:
             switch (current_platform) {
             case PLATFORM_MAC:
-                rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+                rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
                 break;
             case PLATFORM_WIN:
                 rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
+                break;
+            case PLATFORM_GAMING:
+                rgb_matrix_sethsv_noeeprom(HSV_TEAL);
+                break;
+            case PLATFORM_LINUX:
+                rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
                 break;
             }
 
@@ -150,6 +160,7 @@ enum custom_keycodes {
     // layer clear - used for getting back to the base layer
     UK_LRCL,
     UK_HIDE,
+    UK_LNUX,
 };
 
 bool is_tmux(void) {
@@ -163,22 +174,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     // Just apply the tmux prefixes we use for the platform before processing
     if (is_tmux()) {
-        if (current_platform == PLATFORM_MAC) {
-            register_code(KC_LALT);
-            register_code(KC_LSFT);
-            register_code(KC_LCTL);
-            register_code(KC_A);
+        switch (current_platform) {
+            case PLATFORM_LINUX:
+            case PLATFORM_MAC:
+                register_code(KC_LALT);
+                register_code(KC_LSFT);
+                register_code(KC_LCTL);
+                register_code(KC_A);
 
-            unregister_code(KC_LALT);
-            unregister_code(KC_LSFT);
-            unregister_code(KC_LCTL);
-            unregister_code(KC_A);
-        } else {
-            register_code(KC_LALT);
-            register_code(KC_COMM);
+                unregister_code(KC_LALT);
+                unregister_code(KC_LSFT);
+                unregister_code(KC_LCTL);
+                unregister_code(KC_A);
+                break;
+            default:
+                register_code(KC_LALT);
+                register_code(KC_COMM);
 
-            unregister_code(KC_LALT);
-            unregister_code(KC_COMM);
+                unregister_code(KC_LALT);
+                unregister_code(KC_COMM);
+                break;
         }
     }
 
@@ -188,8 +203,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             case PLATFORM_MAC:
                 SEND_STRING(SS_LGUI(SS_LSFT("4")));
                 break;
+            case PLATFORM_LINUX:
+	        SEND_STRING(SS_LGUI(SS_LSFT("s")));
+		break;
             case PLATFORM_WIN:
                 SEND_STRING(SS_LGUI(SS_LSFT("s")));
+                break;
+            case PLATFORM_GAMING:
                 break;
             }
 
@@ -204,15 +224,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case UK_HIDE:
             switch (current_platform) {
+            case PLATFORM_LINUX:
+                SEND_STRING(SS_LGUI("q"));
+                break;
             case PLATFORM_MAC:
                 SEND_STRING(SS_LGUI("h"));
                 break;
             case PLATFORM_WIN:
                 SEND_STRING(SS_LGUI("d"));
                 break;
+            case PLATFORM_GAMING:
+                break;
             }
+        case UK_LNUX:
+            current_platform = PLATFORM_LINUX;
+	    set_single_default_layer(_ENGRAM);
+	    set_led_colors(LAYER_DEFAULT);
+	    
 
-            break;
+      
     }
 
     if (get_oneshot_layer() == _FN) {
@@ -299,6 +329,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                                     KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
     ),
 
+    [_GAMING] = LAYOUT_let(
+        KC_TAB,      KC_Q,     KC_W,     KC_E,      KC_R,     KC_T,                           KC_Y,      KC_U,     KC_I,     KC_O,     KC_P,     KC_SCLN,
+        KC_ESC,      KC_A,     KC_S,     KC_D,      KC_F,     KC_G,                           KC_H,      KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,
+        UK_LNUX,     KC_Z,     KC_X,     KC_C,      KC_V,     KC_B,                           KC_N,      KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,  _______,
+                               KC_LBRC,  KC_RBRC,   QK_LEAD,  OSM_ACTL, UK_BRSR,   TT(_NAV),  UK_SCSH,   KC_ENT,   KC_LCBR,  KC_RCBR,
+                                                    KC_BSPC,  UK_TDNW,  QK_REP,    QK_AREP,   OSM_LSFT,  KC_SPC
+    ),
+
     // NOTE: I really need to think about the number and symbol layers. The number row itself feels intuitive enough, but I kind of don't
     // like having to shift the numbers to get to the shifted variations, though it does feel fine when in "num word" mode.
     [_NUM] = LAYOUT_let(
@@ -332,7 +370,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______,  _______,                          _______, _______, _______, _______, _______, _______,
                           _______, _______, _______,  _______, _______,        _______, _______, _______, _______, _______,
                                             _______,  _______, _______,        _______, KC_LSFT, _______
-    )
+    ),
 };
 
 void leader_end_user(void) {
@@ -354,11 +392,21 @@ void leader_end_user(void) {
         SEND_STRING(SS_LCTL(SS_LALT(SS_LSFT(SS_LGUI("~")))));
     } else if (leader_sequence_two_keys(KC_F, KC_N)) {
         set_oneshot_layer(_FN, ONESHOT_START);
+    } else if (leader_sequence_three_keys(KC_L, KC_I, KC_N)) {
+        current_platform = PLATFORM_LINUX;
+        set_single_default_layer(_ENGRAM);
+        set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_three_keys(KC_M, KC_A, KC_C)) {
         current_platform = PLATFORM_MAC;
+        set_single_default_layer(_ENGRAM);
         set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_three_keys(KC_W, KC_I, KC_N)) {
         current_platform = PLATFORM_WIN;
+        set_single_default_layer(_ENGRAM);
+        set_led_colors(LAYER_DEFAULT);
+    } else if (leader_sequence_four_keys(KC_G, KC_A, KC_M, KC_E)) {
+        current_platform = PLATFORM_GAMING;
+        set_single_default_layer(_GAMING);
         set_led_colors(LAYER_DEFAULT);
     } else if (leader_sequence_four_keys(KC_B, KC_O, KC_O, KC_T)) {
         reset_keyboard();
